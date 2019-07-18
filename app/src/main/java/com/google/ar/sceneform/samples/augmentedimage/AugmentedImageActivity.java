@@ -22,6 +22,7 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.Toast;
 
@@ -61,6 +62,7 @@ public class AugmentedImageActivity extends AppCompatActivity {
     // Augmented image and its associated center pose anchor, keyed by the augmented image in
     // the database.
     private final Map<AugmentedImage, AugmentedImageNode> augmentedImageMap = new HashMap<>();
+    AugmentedImageNode augmentedImageNode;
 
     private Config config;
     private Session session;
@@ -79,6 +81,15 @@ public class AugmentedImageActivity extends AppCompatActivity {
     MqttHelper mqttHelper;
     final String logTagTest = "DaveDebug";
 
+    Button polygon_button;
+    Button cylinder_button;
+    Button arrow_button;
+
+    Boolean showPolygon = true;
+    Boolean showArrow = false;
+    Boolean showCylinder = false;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -86,8 +97,13 @@ public class AugmentedImageActivity extends AppCompatActivity {
 
         arFragment = (ArFragment) getSupportFragmentManager().findFragmentById(R.id.ux_fragment);
         fitToScanView = findViewById(R.id.image_view_fit_to_scan);
+        polygon_button = findViewById(R.id.polygon_button);
+        cylinder_button = findViewById(R.id.cylinder_button);
+        arrow_button = findViewById(R.id.arrow_button);
+
 
         arFragment.getArSceneView().getScene().addOnUpdateListener(this::onUpdateFrame);
+        augmentedImageNode = new AugmentedImageNode(this);
     }
 
     @Override
@@ -96,6 +112,7 @@ public class AugmentedImageActivity extends AppCompatActivity {
         if (augmentedImageMap.isEmpty()) {
             fitToScanView.setVisibility(View.VISIBLE);
         }
+
     }
 
     /**
@@ -119,7 +136,9 @@ public class AugmentedImageActivity extends AppCompatActivity {
 
         Collection<AugmentedImage> updatedAugmentedImages =
                 frame.getUpdatedTrackables(AugmentedImage.class);
-        AugmentedImageNode node = new AugmentedImageNode(this);
+
+//        augmentedImageNode = new AugmentedImageNode(this);
+
         for (AugmentedImage augmentedImage : updatedAugmentedImages) {
             switch (augmentedImage.getTrackingState()) {
                 case PAUSED:
@@ -140,9 +159,9 @@ public class AugmentedImageActivity extends AppCompatActivity {
                     // Create a new anchor for newly found images.
                     if (!augmentedImageMap.containsKey(augmentedImage) ) {
 
-                        node.setImage(augmentedImage);
-                        augmentedImageMap.put(augmentedImage, node);
-                        arFragment.getArSceneView().getScene().addChild(node);
+                        augmentedImageNode.setImage(augmentedImage);
+                        augmentedImageMap.put(augmentedImage, augmentedImageNode);
+                        arFragment.getArSceneView().getScene().addChild(augmentedImageNode);
                     }
 //                    disableImageDb();
 
@@ -155,6 +174,29 @@ public class AugmentedImageActivity extends AppCompatActivity {
                     break;
             }
         }
+
+        polygon_button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                setUpPolygonButton();
+            }
+        });
+
+    }
+
+    private void setUpPolygonButton() {
+        if (showPolygon){
+            augmentedImageNode.polygonNodeLeft.setEnabled(false);
+            augmentedImageNode.polygonNodeMid.setEnabled(false);
+            augmentedImageNode.polygonNodeRight.setEnabled(false);
+            showPolygon = false;
+        } else {
+            augmentedImageNode.polygonNodeLeft.setEnabled(true);
+            augmentedImageNode.polygonNodeMid.setEnabled(true);
+            augmentedImageNode.polygonNodeRight.setEnabled(true);
+            showPolygon = true;
+        }
+
     }
 
     private void enableImageDb(){
@@ -194,18 +236,8 @@ public class AugmentedImageActivity extends AppCompatActivity {
                 );
     }
 
-    private void addAnchorFromNode(AugmentedImageNode node){
 
-
-        AnchorNode anchorNode = new AnchorNode(node.getMazeAnchor());
-        TransformableNode tempNode = new TransformableNode(arFragment.getTransformationSystem());
-        tempNode.setParent(anchorNode);
-        tempNode.setRenderable(mazeRenderable);
-        tempNode.select();
-
-    }
-
-    public void onDestroy(){
+    /*public void onDestroy(){
         super.onDestroy();
 
         try {
@@ -227,5 +259,5 @@ public class AugmentedImageActivity extends AppCompatActivity {
         } catch (MqttException e) {
             e.printStackTrace();
         }
-    }
+    }*/
 }

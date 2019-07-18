@@ -91,3 +91,18 @@ sceneform.asset('sampledata/green-maze/mazegreen.obj',
         'default',
         'sampledata/green-maze/mazegreen.sfa',
         'src/main/res/raw/mazegreen')
+
+sceneform.asset('sampledata/arrow/model.obj',
+        'default',
+        'sampledata/arrow/model.sfa',
+        'src/main/assets/arrow')
+
+sceneform.asset('sampledata/cylinder/Chalk.obj',
+        'default',
+        'sampledata/cylinder/Chalk.sfa',
+        'src/main/assets/cylinder')
+
+sceneform.asset('sampledata/polygon/model.obj',
+        'default',
+        'sampledata/polygon/model.sfa',
+        'src/main/assets/polygon')

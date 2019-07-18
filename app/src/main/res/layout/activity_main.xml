@@ -36,4 +36,33 @@
       android:contentDescription="@string/fit_image_to_scan"
       />
 
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <Button
+            android:id="@+id/polygon_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_above="@+id/cylinder_button"
+            android:layout_alignParentEnd="true"
+            android:text="Polygon" />
+
+        <Button
+            android:id="@+id/cylinder_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_above="@+id/arrow_button"
+            android:layout_alignParentEnd="true"
+            android:text="cylinder" />
+        <Button
+            android:id="@+id/arrow_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentBottom="true"
+            android:text="arrow" />
+    </RelativeLayout>
+
+
 </FrameLayout>
