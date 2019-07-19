@@ -34,6 +34,7 @@ import com.google.ar.core.Session;
 import com.google.ar.core.TrackingState;
 import com.google.ar.sceneform.AnchorNode;
 import com.google.ar.sceneform.FrameTime;
+import com.google.ar.sceneform.math.Vector3;
 import com.google.ar.sceneform.rendering.ModelRenderable;
 import com.google.ar.sceneform.samples.common.helpers.SnackbarHelper;
 import com.google.ar.sceneform.ux.ArFragment;
@@ -69,25 +70,25 @@ public class AugmentedImageActivity extends AppCompatActivity {
     private AugmentedImageDatabase augmentedImageDatabase;
     private AugmentedImageDatabase augmentedImageDatabase2;
     private  boolean isTrackedFirstTime = true;
-    private  boolean isTrackedSecondTime = false;
     private  boolean needToDisable = true;
 
+//    private static final String SAMPLE_IMAGE_DATABASE = "stones-marker.imgdb";
     private static final String SAMPLE_IMAGE_DATABASE = "new_sample_database.imgdb";
-    private static final String SAMPLE_IMAGE_DATABASE2 = "sample_database.imgdb";
+
     private static final String TAG = "AugmentedImageFragment";
 
-    private ModelRenderable mazeRenderable;
-
-    MqttHelper mqttHelper;
-    final String logTagTest = "DaveDebug";
+    final String logTagTest = "test_mqtt";
 
     Button polygon_button;
     Button cylinder_button;
     Button arrow_button;
 
-    Boolean showPolygon = true;
-    Boolean showArrow = false;
-    Boolean showCylinder = false;
+    //Only Polygon graph will be shown at the first time detected image marker.
+    Boolean isPolygonHidden = false;
+    Boolean isArrowHidden = true;
+    Boolean isCylinderHidden = true;
+
+    float f = 0;
 
 
     @Override
@@ -104,6 +105,7 @@ public class AugmentedImageActivity extends AppCompatActivity {
 
         arFragment.getArSceneView().getScene().addOnUpdateListener(this::onUpdateFrame);
         augmentedImageNode = new AugmentedImageNode(this);
+        polygon_button.setEnabled(false);
     }
 
     @Override
@@ -144,7 +146,7 @@ public class AugmentedImageActivity extends AppCompatActivity {
                 case PAUSED:
                     // When an image is in PAUSED state, but the camera is not PAUSED, it has been detected,
                     // but not yet tracked.
-                    String text = "Detected Image " + augmentedImage.getIndex();
+                    String text = "Detected Image";
                     Log.w("TrackPic","Status: PAUSED");
                     Log.w("TrackPic","Tracking Method: "+augmentedImage.getTrackingMethod().toString());
 
@@ -164,6 +166,8 @@ public class AugmentedImageActivity extends AppCompatActivity {
                         arFragment.getArSceneView().getScene().addChild(augmentedImageNode);
                     }
 //                    disableImageDb();
+                    if (augmentedImage.getTrackingMethod().toString().equals("LAST_KNOWN_POSE")) SnackbarHelper.getInstance().hide(this);
+
 
                     break;
 
@@ -175,28 +179,64 @@ public class AugmentedImageActivity extends AppCompatActivity {
             }
         }
 
-        polygon_button.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                setUpPolygonButton();
-            }
-        });
+        polygon_button.setOnClickListener(v -> setUpPolygonButton());
+
+        cylinder_button.setOnClickListener(v -> setUpCylinderButton());
+
+        arrow_button.setOnClickListener(v -> setUpArrowButton());
 
     }
 
-    private void setUpPolygonButton() {
-        if (showPolygon){
-            augmentedImageNode.polygonNodeLeft.setEnabled(false);
-            augmentedImageNode.polygonNodeMid.setEnabled(false);
-            augmentedImageNode.polygonNodeRight.setEnabled(false);
-            showPolygon = false;
-        } else {
-            augmentedImageNode.polygonNodeLeft.setEnabled(true);
-            augmentedImageNode.polygonNodeMid.setEnabled(true);
-            augmentedImageNode.polygonNodeRight.setEnabled(true);
-            showPolygon = true;
+    private void setUpArrowButton() {
+        if(isArrowHidden){
+            augmentedImageNode.hideArrowGraph(false);
+            augmentedImageNode.hideCylinderGraph(true);
+            augmentedImageNode.hidePolygonGraph(true);
+            isArrowHidden = false;
+            isCylinderHidden = true;
+            isPolygonHidden = true;
+            arrow_button.setEnabled(false);
+            cylinder_button.setEnabled(true);
+            polygon_button.setEnabled(true);
+        }else {
+            augmentedImageNode.hideArrowGraph(true);
+            isArrowHidden = true;
         }
 
+    }
+
+    private void setUpCylinderButton() {
+        if(isCylinderHidden){
+            augmentedImageNode.hideCylinderGraph(false);
+            augmentedImageNode.hidePolygonGraph(true);
+            augmentedImageNode.hideArrowGraph(true);
+            isCylinderHidden = false;
+            isPolygonHidden = true;
+            isArrowHidden = true;
+            cylinder_button.setEnabled(false);
+            polygon_button.setEnabled(true);
+            arrow_button.setEnabled(true);
+        }else {
+            augmentedImageNode.hideCylinderGraph(true);
+            isCylinderHidden = true;
+        }
+    }
+
+    private void setUpPolygonButton() {
+        if(isPolygonHidden){
+            augmentedImageNode.hidePolygonGraph(false);
+            augmentedImageNode.hideCylinderGraph(true);
+            augmentedImageNode.hideArrowGraph(true);
+            isPolygonHidden = false;
+            isCylinderHidden = true;
+            isArrowHidden = true;
+            polygon_button.setEnabled(false);
+            cylinder_button.setEnabled(true);
+            arrow_button.setEnabled(true);
+        }else {
+            augmentedImageNode.hidePolygonGraph(true);
+            isPolygonHidden = true;
+        }
     }
 
     private void enableImageDb(){
@@ -224,24 +264,11 @@ public class AugmentedImageActivity extends AppCompatActivity {
         }
     }
 
-    private void renderMaze(){
-        ModelRenderable.builder()
-                .setSource(this,R.raw.mazegreen)
-                .build().thenAccept(renderable -> mazeRenderable = renderable)
-                .exceptionally(
-                        throwable -> {
-                            Toast.makeText(this, "Unable to load cat model", Toast.LENGTH_SHORT).show();
-                            return null;
-                        }
-                );
-    }
-
-
-    /*public void onDestroy(){
+    public void onDestroy(){
         super.onDestroy();
 
         try {
-            IMqttToken disconToken = mqttHelper.mqttAndroidClient.disconnect();
+            IMqttToken disconToken = augmentedImageNode.mqttHelper.mqttAndroidClient.disconnect();
             disconToken.setActionCallback(new IMqttActionListener() {
                 @Override
                 public void onSuccess(IMqttToken asyncActionToken) {
@@ -259,5 +286,5 @@ public class AugmentedImageActivity extends AppCompatActivity {
         } catch (MqttException e) {
             e.printStackTrace();
         }
-    }*/
+    }
 }

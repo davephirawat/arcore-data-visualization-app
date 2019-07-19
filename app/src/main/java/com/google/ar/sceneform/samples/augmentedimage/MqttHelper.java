@@ -1,7 +1,10 @@
 package com.google.ar.sceneform.samples.augmentedimage;
 
+import android.app.Activity;
 import android.content.Context;
 import android.util.Log;
+
+import com.google.ar.sceneform.samples.common.helpers.SnackbarHelper;
 
 import org.eclipse.paho.android.service.MqttAndroidClient;
 import org.eclipse.paho.client.mqttv3.DisconnectedBufferOptions;
@@ -20,13 +23,20 @@ public class MqttHelper {
     final String serverUri = "tcp://postman.cloudmqtt.com:13865";
 
     final String clientId = "ExampleAndroidClient";
-    final String subscriptionTopic = "test/android";
+    final String subscriptionTopic = "test/left";
+    final String subscriptionTopic2 = "test/mid";
+    final String subscriptionTopic3 = "test/right";
+    final String subscriptionTopic4 = "test/back";
+    final String subscriptionTopic5 = "test/foot";
 
     final String username = "xamdzcss";
     final String password = "Dee5aMYWBwtk";
-    final String logTagTest = "mqttdave";
+    final String logTagTest = "test_mqtt";
+
+    Context context;
 
     public MqttHelper(Context context){
+        this.context = context;
         mqttAndroidClient = new MqttAndroidClient(context, serverUri, clientId);
         mqttAndroidClient.setCallback(new MqttCallbackExtended() {
             @Override
@@ -75,7 +85,10 @@ public class MqttHelper {
                     disconnectedBufferOptions.setPersistBuffer(false);
                     disconnectedBufferOptions.setDeleteOldestMessages(false);
                     mqttAndroidClient.setBufferOpts(disconnectedBufferOptions);
-                    subscribeToTopic();
+                    subscribeToTopic(subscriptionTopic);
+                    subscribeToTopic(subscriptionTopic2);
+                    subscribeToTopic(subscriptionTopic3);
+
                 }
 
                 @Override
@@ -91,12 +104,14 @@ public class MqttHelper {
     }
 
 
-    private void subscribeToTopic() {
+    private void subscribeToTopic(String topic) {
         try {
-            mqttAndroidClient.subscribe(subscriptionTopic, 0, null, new IMqttActionListener() {
+            mqttAndroidClient.subscribe(topic, 0, null, new IMqttActionListener() {
                 @Override
                 public void onSuccess(IMqttToken asyncActionToken) {
-                    Log.w(logTagTest,"Subscribed!");
+                    Log.w(logTagTest,"Subscribed to: "+topic);
+                    SnackbarHelper.getInstance().showMessageWithDismiss((Activity) context,"Subscribed to: "+topic);
+
                 }
 
                 @Override

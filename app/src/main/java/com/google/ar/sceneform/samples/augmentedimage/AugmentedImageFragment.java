@@ -48,6 +48,7 @@ public class AugmentedImageFragment extends ArFragment {
     private static final String DEFAULT_IMAGE_NAME = "default.jpg";
 
     // This is a pre-created database containing the sample image.
+//    private static final String SAMPLE_IMAGE_DATABASE = "stones-marker.imgdb";
     private static final String SAMPLE_IMAGE_DATABASE = "new_sample_database.imgdb";
 
     // Augmented image configuration and rendering.
