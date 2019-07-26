@@ -23,7 +23,7 @@ public class MqttHelper {
     final String serverUri = "tcp://postman.cloudmqtt.com:13865";
 
     final String clientId = "ExampleAndroidClient";
-    final String subscriptionTopic = "test/left";
+    final String subscriptionTopic = "test/result";
     final String subscriptionTopic2 = "test/mid";
     final String subscriptionTopic3 = "test/right";
     final String subscriptionTopic4 = "test/back";
@@ -51,7 +51,7 @@ public class MqttHelper {
 
             @Override
             public void messageArrived(String topic, MqttMessage mqttMessage) throws Exception {
-                Log.w(logTagTest, mqttMessage.toString());
+//                Log.w(logTagTest, mqttMessage.toString());
             }
 
             @Override
@@ -83,11 +83,13 @@ public class MqttHelper {
                     disconnectedBufferOptions.setBufferEnabled(true);
                     disconnectedBufferOptions.setBufferSize(100);
                     disconnectedBufferOptions.setPersistBuffer(false);
-                    disconnectedBufferOptions.setDeleteOldestMessages(false);
+                    disconnectedBufferOptions.setDeleteOldestMessages(true);
                     mqttAndroidClient.setBufferOpts(disconnectedBufferOptions);
                     subscribeToTopic(subscriptionTopic);
-                    subscribeToTopic(subscriptionTopic2);
+                    /*subscribeToTopic(subscriptionTopic2);
                     subscribeToTopic(subscriptionTopic3);
+                    subscribeToTopic(subscriptionTopic4);
+                    subscribeToTopic(subscriptionTopic5);*/
 
                 }
 

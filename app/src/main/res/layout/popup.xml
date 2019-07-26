@@ -5,7 +5,7 @@
     android:layout_height="wrap_content"
     android:id="@+id/popup_textView"
     android:textColor="#fff"
-    android:textSize="24sp"
+    android:textSize="36sp"
     android:paddingVertical="8dp"
     android:paddingHorizontal="14dp"
     android:gravity="center"

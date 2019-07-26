@@ -37,6 +37,7 @@ import com.google.ar.sceneform.rendering.ViewRenderable;
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.MqttCallbackExtended;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
+import org.json.JSONObject;
 
 /**
  * Node for rendering an augmented image. The image is framed by placing the virtual picture frame
@@ -76,8 +77,6 @@ public class AugmentedImageNode extends AnchorNode {
     TextView backSensor_textView;
     TextView footSensor_textView;
 
-    // Add a variable called polygonRenderableLeft for use with loading
-    // GreenMaze.sfb.
     private ModelRenderable polygonRenderableLeft;
     private ModelRenderable polygonRenderableMid;
     private ModelRenderable polygonRenderableRight;
@@ -105,9 +104,20 @@ public class AugmentedImageNode extends AnchorNode {
 
     private Context context;
     MqttHelper mqttHelper;
-    private final String logTagTest = "test_mqtt";
+    private final String test_mqtt = "test_mqtt";
+    private final String test_json = "test_json";
 
     private boolean flag = true;
+
+    String message;
+    JSONObject messageJSON;
+    JSONObject result;
+
+    double leftValue;
+    double midValue;
+    double rightValue;
+    double backValue;
+    double footValue;
 
 
 
@@ -127,30 +137,7 @@ public class AugmentedImageNode extends AnchorNode {
                             polygonRenderableLeft =
                                     ShapeFactory.makeCube(new Vector3(1f,1f,1f), new Vector3(0, 0, 0), material); });
 
-        MaterialFactory.makeOpaqueWithColor(context, new Color(android.graphics.Color.LTGRAY))
-                .thenAccept(
-                        material -> {
-                            polygonRenderableMid =
-                                    ShapeFactory.makeCube(new Vector3(1f,1f,1f), new Vector3(0, 0, 0), material); });
 
-
-        MaterialFactory.makeOpaqueWithColor(context, new Color(android.graphics.Color.LTGRAY))
-                .thenAccept(
-                        material -> {
-                            polygonRenderableRight =
-                                    ShapeFactory.makeCube(new Vector3(1f,1f,1f), new Vector3(0, 0, 0), material); });
-
-        MaterialFactory.makeOpaqueWithColor(context, new Color(android.graphics.Color.LTGRAY))
-                .thenAccept(
-                        material -> {
-                            polygonRenderableBack =
-                                    ShapeFactory.makeCube(new Vector3(1f,1f,1f), new Vector3(0, 0, 0), material); });
-
-        MaterialFactory.makeOpaqueWithColor(context, new Color(android.graphics.Color.LTGRAY))
-                .thenAccept(
-                        material -> {
-                            polygonRenderableFoot =
-                                    ShapeFactory.makeCube(new Vector3(1f,1f,1f), new Vector3(0, 0, 0), material); });
 
     }
 
@@ -162,30 +149,6 @@ public class AugmentedImageNode extends AnchorNode {
                             cylinderRenderableLeft =
                                     ShapeFactory.makeCylinder(0.7f,1f, new Vector3(0, 0, 0), material); });
 
-        MaterialFactory.makeOpaqueWithColor(context, new Color(android.graphics.Color.LTGRAY))
-                .thenAccept(
-                        material -> {
-                            cylinderRenderableMid =
-                                    ShapeFactory.makeCylinder(0.7f,1f, new Vector3(0, 0, 0), material); });
-
-
-        MaterialFactory.makeOpaqueWithColor(context, new Color(android.graphics.Color.LTGRAY))
-                .thenAccept(
-                        material -> {
-                            cylinderRenderableRight =
-                                    ShapeFactory.makeCylinder(0.7f,1f, new Vector3(0, 0, 0), material); });
-
-        MaterialFactory.makeOpaqueWithColor(context, new Color(android.graphics.Color.LTGRAY))
-                .thenAccept(
-                        material -> {
-                            cylinderRenderableBack =
-                                    ShapeFactory.makeCylinder(0.7f,1f, new Vector3(0, 0, 0), material); });
-
-        MaterialFactory.makeOpaqueWithColor(context, new Color(android.graphics.Color.LTGRAY))
-                .thenAccept(
-                        material -> {
-                            cylinderRenderableFoot =
-                                    ShapeFactory.makeCylinder(0.7f,1f, new Vector3(0, 0, 0), material); });
 
     }
 
@@ -196,25 +159,7 @@ public class AugmentedImageNode extends AnchorNode {
                         .setSource(context, Uri.parse("arrow.sfb"))
                         .build();
 
-        arrowRenderableMid =
-                ModelRenderable.builder()
-                        .setSource(context, Uri.parse("arrow.sfb"))
-                        .build();
 
-        arrowRenderableRight =
-                ModelRenderable.builder()
-                        .setSource(context, Uri.parse("arrow.sfb"))
-                        .build();
-
-        arrowRenderableBack =
-                ModelRenderable.builder()
-                        .setSource(context, Uri.parse("arrow.sfb"))
-                        .build();
-
-        arrowRenderableFoot =
-                ModelRenderable.builder()
-                        .setSource(context, Uri.parse("arrow.sfb"))
-                        .build();
 
     }
 
@@ -243,49 +188,6 @@ public class AugmentedImageNode extends AnchorNode {
             return;
         }
 
-        if (!arrowRenderableMid.isDone()) {
-            CompletableFuture.allOf(arrowRenderableMid)
-                    .thenAccept((Void aVoid) -> setImage(image))
-                    .exceptionally(
-                            throwable -> {
-                                Log.e(TAG, "Exception loading", throwable);
-                                return null;
-                            });
-            return;
-        }
-/*
-        if (!arrowRenderableRight.isDone()) {
-            CompletableFuture.allOf(arrowRenderableRight)
-                    .thenAccept((Void aVoid) -> setImage(image))
-                    .exceptionally(
-                            throwable -> {
-                                Log.e(TAG, "Exception loading", throwable);
-                                return null;
-                            });
-            return;
-        }
-
-        if (!arrowRenderableBack.isDone()) {
-            CompletableFuture.allOf(arrowRenderableBack)
-                    .thenAccept((Void aVoid) -> setImage(image))
-                    .exceptionally(
-                            throwable -> {
-                                Log.e(TAG, "Exception loading", throwable);
-                                return null;
-                            });
-            return;
-        }
-
-        if (!arrowRenderableFoot.isDone()) {
-            CompletableFuture.allOf(arrowRenderableFoot)
-                    .thenAccept((Void aVoid) -> setImage(image))
-                    .exceptionally(
-                            throwable -> {
-                                Log.e(TAG, "Exception loading", throwable);
-                                return null;
-                            });
-            return;
-        }*/
 
 
         // Set the anchor based on the center of the image.
@@ -309,13 +211,13 @@ public class AugmentedImageNode extends AnchorNode {
     private void visualiseNumbers() {
 
         //The Number on the Left side.
-        ViewRenderable.builder().setView(context, R.layout.popup).setSizer(new FixedHeightViewSizer(0.03f))
+        ViewRenderable.builder().setView(context, R.layout.popup).setSizer(new FixedHeightViewSizer(0.07f))
                 .build()
                 .thenAccept(
                         viewRenderable -> {
 
                             leftSensor = new Node();
-                            leftSensor.setLocalPosition(new Vector3(-0.2f, 0.2f, -0.15f));
+                            leftSensor.setLocalPosition(new Vector3(-0.3f, 0.2f, 0));
                             leftSensor.setLocalRotation(Quaternion.axisAngle(new Vector3(1f, 0, 0), -90));
                             leftSensor.setParent(this);
                             leftSensor.setRenderable(viewRenderable);
@@ -326,7 +228,7 @@ public class AugmentedImageNode extends AnchorNode {
                 );
 
         //The Number in the middle.
-        ViewRenderable.builder().setView(context, R.layout.popup).setSizer(new FixedHeightViewSizer(0.03f))
+        ViewRenderable.builder().setView(context, R.layout.popup).setSizer(new FixedHeightViewSizer(0.07f))
                 .build()
                 .thenAccept(
                         viewRenderable -> {
@@ -344,13 +246,13 @@ public class AugmentedImageNode extends AnchorNode {
                 );
 
         //The Number on the Right side.
-        ViewRenderable.builder().setView(context, R.layout.popup).setSizer(new FixedHeightViewSizer(0.03f))
+        ViewRenderable.builder().setView(context, R.layout.popup).setSizer(new FixedHeightViewSizer(0.07f))
                 .build()
                 .thenAccept(
                         viewRenderable -> {
 
                             rightSensor = new Node();
-                            rightSensor.setLocalPosition(new Vector3(0.2f, 0.2f, -0.15f));
+                            rightSensor.setLocalPosition(new Vector3(0.3f, 0.2f, 0));
                             rightSensor.setLocalRotation(Quaternion.axisAngle(new Vector3(1f, 0, 0), -90));
                             rightSensor.setParent(this);
                             rightSensor.setRenderable(viewRenderable);
@@ -362,7 +264,7 @@ public class AugmentedImageNode extends AnchorNode {
                 );
 
         //The Number on the Right side.
-        ViewRenderable.builder().setView(context, R.layout.popup).setSizer(new FixedHeightViewSizer(0.03f))
+        ViewRenderable.builder().setView(context, R.layout.popup).setSizer(new FixedHeightViewSizer(0.07f))
                 .build()
                 .thenAccept(
                         viewRenderable -> {
@@ -379,8 +281,8 @@ public class AugmentedImageNode extends AnchorNode {
                         }
                 );
 
-        //The Number on the Right side.
-        ViewRenderable.builder().setView(context, R.layout.popup).setSizer(new FixedHeightViewSizer(0.03f))
+        //The Number on the Right side
+        ViewRenderable.builder().setView(context, R.layout.popup).setSizer(new FixedHeightViewSizer(0.07f))
                 .build()
                 .thenAccept(
                         viewRenderable -> {
@@ -401,37 +303,37 @@ public class AugmentedImageNode extends AnchorNode {
 
     private void visualisePolygonGraph(){
 
-        Vector3 initialScale = new Vector3(0.01f,0.01f,0.1f);                         // Scale Y from 0.001f - 0.1f (100 scale)
+        Vector3 initialScale = new Vector3(0.04f,0.04f,0.1f);                         // Scale Y from 0.001f - 0.1f (100 scale)
         float initialY = 0.2f;
-        float initialZ = -0.25f;
+        float initialZ = -0.18f;
 
         polygonNodeLeft = new Node();
         polygonNodeLeft.setParent(this);
         polygonNodeLeft.setRenderable(polygonRenderableLeft);
         polygonNodeLeft.setLocalScale(initialScale);
-        polygonNodeLeft.setLocalPosition(new Vector3(-0.2f, initialY, initialZ));
+        polygonNodeLeft.setLocalPosition(new Vector3(-0.3f, initialY, initialZ));
 
         polygonNodeMid = new Node();
         polygonNodeMid.setParent(this);
-        polygonNodeMid.setRenderable(polygonRenderableMid);
+        polygonNodeMid.setRenderable(polygonRenderableLeft);
         polygonNodeMid.setLocalScale(initialScale);
         polygonNodeMid.setLocalPosition(new Vector3(0, initialY, -0.15f));
 
         polygonNodeRight = new Node();
         polygonNodeRight.setParent(this);
-        polygonNodeRight.setRenderable(polygonRenderableRight);
+        polygonNodeRight.setRenderable(polygonRenderableLeft);
         polygonNodeRight.setLocalScale(initialScale);
-        polygonNodeRight.setLocalPosition(new Vector3(0.2f, initialY, initialZ));
+        polygonNodeRight.setLocalPosition(new Vector3(0.3f, initialY, initialZ));
 
         polygonNodeBack = new Node();
         polygonNodeBack.setParent(this);
-        polygonNodeBack.setRenderable(polygonRenderableBack);
+        polygonNodeBack.setRenderable(polygonRenderableLeft);
         polygonNodeBack.setLocalScale(initialScale);
         polygonNodeBack.setLocalPosition(new Vector3(0, 0, -0.3f));
 
         polygonNodeFoot = new Node();
         polygonNodeFoot.setParent(this);
-        polygonNodeFoot.setRenderable(polygonRenderableMid);
+        polygonNodeFoot.setRenderable(polygonRenderableLeft);
         polygonNodeFoot.setLocalScale(initialScale);
         polygonNodeFoot.setLocalPosition(new Vector3(0, 0.35f, 0.3f));
 
@@ -441,21 +343,21 @@ public class AugmentedImageNode extends AnchorNode {
     private void visualiseCylinderGraph(){
 
         Quaternion rotateValue = Quaternion.axisAngle(new Vector3(1f, 0, 0), 90);    // Rotate 90 degree around X axis
-        Vector3 initialScale = new Vector3(0.01f,0.1f,0.01f);                         // Scale Y from 0.001f - 0.1f (100 scale)
+        Vector3 initialScale = new Vector3(0.04f,0.1f,0.04f);                         // Scale Y from 0.001f - 0.1f (100 scale)
         float initialY = 0.2f;
-        float initialZ = -0.25f;
+        float initialZ = -0.18f;
 
         cylinderNodeLeft = new Node();
         cylinderNodeLeft.setParent(this);
         cylinderNodeLeft.setRenderable(cylinderRenderableLeft);
         cylinderNodeLeft.setLocalScale(initialScale);
-        cylinderNodeLeft.setLocalPosition(new Vector3(-0.2f, initialY, initialZ));
+        cylinderNodeLeft.setLocalPosition(new Vector3(-0.3f, initialY, initialZ));
         cylinderNodeLeft.setLocalRotation(rotateValue);
 
 
         cylinderNodeMid = new Node();
         cylinderNodeMid.setParent(this);
-        cylinderNodeMid.setRenderable(cylinderRenderableMid);
+        cylinderNodeMid.setRenderable(cylinderRenderableLeft);
         cylinderNodeMid.setLocalScale(initialScale);
         cylinderNodeMid.setLocalPosition(new Vector3(0, initialY, -0.15f));
         cylinderNodeMid.setLocalRotation(rotateValue);
@@ -463,15 +365,15 @@ public class AugmentedImageNode extends AnchorNode {
 
         cylinderNodeRight = new Node();
         cylinderNodeRight.setParent(this);
-        cylinderNodeRight.setRenderable(cylinderRenderableRight);
+        cylinderNodeRight.setRenderable(cylinderRenderableLeft);
         cylinderNodeRight.setLocalScale(initialScale);
-        cylinderNodeRight.setLocalPosition(new Vector3(0.2f, initialY, initialZ));
+        cylinderNodeRight.setLocalPosition(new Vector3(0.3f, initialY, initialZ));
         cylinderNodeRight.setLocalRotation(rotateValue);
 
 
         cylinderNodeBack = new Node();
         cylinderNodeBack.setParent(this);
-        cylinderNodeBack.setRenderable(cylinderRenderableBack);
+        cylinderNodeBack.setRenderable(cylinderRenderableLeft);
         cylinderNodeBack.setLocalScale(initialScale);
         cylinderNodeBack.setLocalPosition(new Vector3(0, 0, -0.3f));
         cylinderNodeBack.setLocalRotation(rotateValue);
@@ -480,7 +382,7 @@ public class AugmentedImageNode extends AnchorNode {
 
         cylinderNodeFoot = new Node();
         cylinderNodeFoot.setParent(this);
-        cylinderNodeFoot.setRenderable(cylinderRenderableMid);
+        cylinderNodeFoot.setRenderable(cylinderRenderableLeft);
         cylinderNodeFoot.setLocalScale(initialScale);
         cylinderNodeFoot.setLocalPosition(new Vector3(0, 0.35f, 0.3f));
         cylinderNodeFoot.setLocalRotation(rotateValue);
@@ -495,19 +397,19 @@ public class AugmentedImageNode extends AnchorNode {
         Quaternion rotateValue = Quaternion.axisAngle(new Vector3(1f, 0, 0), 90);    // Rotate 90 degree around X axis
         Vector3 initialScale = new Vector3( 0.28f,0.4f,0.28f);                        // Scale Y from 0.004f - 0.4f (100 scale, 0.04/scale)
         float initialY = 0.2f;
-        float initialZ = -0.30f;
+        float initialZ = -0.23f;
 
         arrowNodeLeft = new Node();
         arrowNodeLeft.setParent(this);
-        arrowNodeLeft.setRenderable(arrowRenderableMid.getNow(null));
-        arrowNodeLeft.setLocalPosition(new Vector3(-0.2f, initialY, initialZ));
+        arrowNodeLeft.setRenderable(arrowRenderableLeft.getNow(null));
+        arrowNodeLeft.setLocalPosition(new Vector3(-0.3f, initialY, initialZ));
         arrowNodeLeft.setLocalScale(initialScale);
         arrowNodeLeft.setLocalRotation(rotateValue);
 
 
         arrowNodeMid = new Node();
         arrowNodeMid.setParent(this);
-        arrowNodeMid.setRenderable(arrowRenderableMid.getNow(null));
+        arrowNodeMid.setRenderable(arrowRenderableLeft.getNow(null));
         arrowNodeMid.setLocalPosition(new Vector3(0, initialY, -0.2f));
         arrowNodeMid.setLocalScale(initialScale);
         arrowNodeMid.setLocalRotation(rotateValue);
@@ -515,15 +417,15 @@ public class AugmentedImageNode extends AnchorNode {
 
         arrowNodeRight = new Node();
         arrowNodeRight.setParent(this);
-        arrowNodeRight.setRenderable(arrowRenderableMid.getNow(null));
-        arrowNodeRight.setLocalPosition(new Vector3(0.2f, initialY, initialZ));
+        arrowNodeRight.setRenderable(arrowRenderableLeft.getNow(null));
+        arrowNodeRight.setLocalPosition(new Vector3(0.3f, initialY, initialZ));
         arrowNodeRight.setLocalScale(initialScale);
         arrowNodeRight.setLocalRotation(rotateValue);
 
 
         arrowNodeBack = new Node();
         arrowNodeBack.setParent(this);
-        arrowNodeBack.setRenderable(arrowRenderableMid.getNow(null));
+        arrowNodeBack.setRenderable(arrowRenderableLeft.getNow(null));
         arrowNodeBack.setLocalPosition(new Vector3(0, 0, -0.35f));
         arrowNodeBack.setLocalScale(initialScale);
         arrowNodeBack.setLocalRotation(rotateValue);
@@ -531,7 +433,7 @@ public class AugmentedImageNode extends AnchorNode {
 
         arrowNodeFoot = new Node();
         arrowNodeFoot.setParent(this);
-        arrowNodeFoot.setRenderable(arrowRenderableMid.getNow(null));
+        arrowNodeFoot.setRenderable(arrowRenderableLeft.getNow(null));
         arrowNodeFoot.setLocalPosition(new Vector3(0, 0.35f, 0.25f));
         arrowNodeFoot.setLocalScale(initialScale);
         arrowNodeFoot.setLocalRotation(rotateValue);
@@ -600,41 +502,44 @@ public class AugmentedImageNode extends AnchorNode {
 
     private void scaleAllLeftGraph(float value) {
 
-        polygonNodeLeft.setLocalScale(new Vector3(0.01f,0.01f,value));
-        cylinderNodeLeft.setLocalScale(new Vector3(0.01f,value,0.01f));
-        arrowNodeLeft.setLocalScale(new Vector3( 0.28f,value * 4.0f,0.28f));
+        float multiplier = 2.0f;
+        polygonNodeLeft.setLocalScale(new Vector3(0.03f,0.03f,value * multiplier));
+        cylinderNodeLeft.setLocalScale(new Vector3(0.03f,value * multiplier,0.03f));
+        arrowNodeLeft.setLocalScale(new Vector3( 0.31f,value * multiplier * 4.0f,0.31f));
 
     }
 
     private void scaleAllMidGraph(float value) {
 
-        polygonNodeMid.setLocalScale(new Vector3(0.01f,0.01f,value));
-        cylinderNodeMid.setLocalScale(new Vector3(0.01f,value,0.01f));
-        arrowNodeMid.setLocalScale(new Vector3( 0.28f,value * 4.0f,0.28f));
+        polygonNodeMid.setLocalScale(new Vector3(0.03f,0.03f,value));
+        cylinderNodeMid.setLocalScale(new Vector3(0.03f,value,0.03f));
+        arrowNodeMid.setLocalScale(new Vector3( 0.31f,value * 4.0f,0.31f));
 
     }
 
     private void scaleAllRightGraph(float value) {
 
-        polygonNodeRight.setLocalScale(new Vector3(0.01f,0.01f,value));
-        cylinderNodeRight.setLocalScale(new Vector3(0.01f,value,0.01f));
-        arrowNodeRight.setLocalScale(new Vector3( 0.28f,value * 4.0f,0.28f));
+        float multiplier = 2.0f;
+        polygonNodeRight.setLocalScale(new Vector3(0.03f,0.03f,value * multiplier));
+        cylinderNodeRight.setLocalScale(new Vector3(0.03f,value * multiplier,0.03f));
+        arrowNodeRight.setLocalScale(new Vector3( 0.31f,value * multiplier * 4.0f,0.31f));
 
     }
 
     private void scaleAllBackGraph(float value) {
 
-        polygonNodeBack.setLocalScale(new Vector3(0.01f,0.01f,value));
-        cylinderNodeBack.setLocalScale(new Vector3(0.01f,value,0.01f));
-        arrowNodeBack.setLocalScale(new Vector3( 0.28f,value * 4.0f,0.28f));
+        float multiplier = 2.0f;
+        polygonNodeBack.setLocalScale(new Vector3(0.03f,0.03f,value));
+        cylinderNodeBack.setLocalScale(new Vector3(0.03f,value,0.03f));
+        arrowNodeBack.setLocalScale(new Vector3( 0.31f,value * 4.0f,0.31f));
 
     }
 
     private void scaleAllFootGraph(float value) {
 
-        polygonNodeFoot.setLocalScale(new Vector3(0.01f,0.01f,value));
-        cylinderNodeFoot.setLocalScale(new Vector3(0.01f,value,0.01f));
-        arrowNodeFoot.setLocalScale(new Vector3( 0.28f,value * 4.0f,0.28f));
+        polygonNodeFoot.setLocalScale(new Vector3(0.03f,0.03f,value));
+        cylinderNodeFoot.setLocalScale(new Vector3(0.03f,value,0.03f));
+        arrowNodeFoot.setLocalScale(new Vector3( 0.31f,value * 4.0f,0.31f));
 
     }
 
@@ -645,56 +550,94 @@ public class AugmentedImageNode extends AnchorNode {
             mqttHelper.setCallback(new MqttCallbackExtended() {
                 @Override
                 public void connectComplete(boolean b, String s) {
-                    Log.w(logTagTest,"Connected! Successfully StartMqtt");
+                    Log.w(test_mqtt,"Connected! Successfully StartMqtt");
 
                 }
 
                 @Override
                 public void connectionLost(Throwable throwable) {
-                    Log.w(logTagTest,"Connection Lost!");
+                    Log.w(test_mqtt,"Connection Lost!");
 
                 }
 
                 @Override
                 public void messageArrived(String topic, MqttMessage mqttMessage) throws Exception {
-                    Log.w(logTagTest, "Received: "+topic+" - "+mqttMessage.toString());
 
-                    float value = Float.valueOf(mqttMessage.toString().trim());
+//                    Log.w(test_mqtt, "Received: "+topic+" - "+mqttMessage.toString());
+
+                    message = mqttMessage.toString().trim().replaceAll("'","\"");
+
+                    Log.w(test_json, "Received JSON: "+message);
+
+                    messageJSON = new JSONObject(message);
+                    result = messageJSON.getJSONObject("value");
+
+                    leftValue = result.getDouble("left");
+                    midValue = result.getDouble("mid");
+                    rightValue = result.getDouble("right");
+                    backValue = result.getDouble("back");
+                    footValue = result.getDouble("foot");
+
+                    Log.w(test_json, "Received double: "+leftValue + ", " + midValue + ", " + rightValue + ", " + backValue + ", " + footValue);
+
+
+                    leftSensor_textView.setText(String.valueOf(leftValue));
+                    midSensor_textView.setText(String.valueOf(midValue));
+                    rightSensor_textView.setText(String.valueOf(rightValue));
+                    backSensor_textView.setText(String.valueOf(backValue));
+                    footSensor_textView.setText(String.valueOf(footValue));
+
+                    leftValue = roundValue(leftValue);
+                    midValue = roundValue(midValue);
+                    rightValue = roundValue(rightValue);
+                    backValue = roundValue(backValue);
+                    footValue = roundValue(footValue);
+
+//                    Log.w(test_json, "After round and convert to float: "+leftValue + ", " + midValue + ", " + rightValue + ", " + backValue + ", " + footValue);
+
+
+                    scaleAllLeftGraph((float) leftValue);
+                    scaleAllMidGraph((float) midValue);
+                    scaleAllRightGraph((float) rightValue);
+                    scaleAllBackGraph((float) backValue);
+                    scaleAllFootGraph((float) footValue);
+
+                    /*float value = Float.valueOf(mqttMessage.toString().trim());
 
                     if ( value <= 0.0f) value = 0.001f;
                     else if ( value > 100.0f) value = 0.1f;
                     else value = value / 1000.0f;
 
-                    Log.w(logTagTest, "Received value to float: "+value);
+                    Log.w(test_mqtt, "Received value to float: "+value);*/
 
-                    if (topic.equals("test/left"))  {
-                        leftSensor_textView.setText(mqttMessage.toString().trim());
+                    /*if (topic.equals("test/left"))  {
+                        leftSensor_textView.setText(message);
                         scaleAllLeftGraph(value);
                     }
 
                     if (topic.equals("test/mid"))  {
-                        midSensor_textView.setText(mqttMessage.toString().trim());
+                        midSensor_textView.setText(message);
                         scaleAllMidGraph(value);
                     }
 
                     if (topic.equals("test/right"))  {
-                        rightSensor_textView.setText(mqttMessage.toString().trim());
+                        rightSensor_textView.setText(message);
                         scaleAllRightGraph(value);
                     }
 
                     if (topic.equals("test/back"))  {
-                        backSensor_textView.setText(mqttMessage.toString().trim());
+                        backSensor_textView.setText(message);
                         scaleAllBackGraph(value);
                     }
 
                     if (topic.equals("test/foot"))  {
-                        footSensor_textView.setText(mqttMessage.toString().trim());
+                        footSensor_textView.setText(message);
                         scaleAllFootGraph(value);
-                    }
+                    }*/
                 }
                 @Override
                 public void deliveryComplete(IMqttDeliveryToken iMqttDeliveryToken) {
-                    Log.w(logTagTest,"Delivery Complete");
+                    Log.w(test_mqtt,"Delivery Complete");
                 }
             });
 
@@ -702,6 +645,24 @@ public class AugmentedImageNode extends AnchorNode {
         }
 
 
+    }
+
+    private double roundValue(double value){
+        if ( value <= 0.0) {
+            value = 0.001;
+            return  value;
+
+        }
+        else if ( value > 100.0) {
+            value = 0.1;
+            return  value;
+
+        }
+        else {
+            value = value / 1000.0;
+            return  value;
+
+        }
     }
 
     public AugmentedImage getImage() {

@@ -24,6 +24,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import com.google.ar.core.AugmentedImage;
@@ -72,8 +73,8 @@ public class AugmentedImageActivity extends AppCompatActivity {
     private  boolean isTrackedFirstTime = true;
     private  boolean needToDisable = true;
 
-//    private static final String SAMPLE_IMAGE_DATABASE = "stones-marker.imgdb";
-    private static final String SAMPLE_IMAGE_DATABASE = "new_sample_database.imgdb";
+    private static final String SAMPLE_IMAGE_DATABASE = "stones-marker.imgdb";
+//    private static final String SAMPLE_IMAGE_DATABASE = "new_sample_database.imgdb";
 
     private static final String TAG = "AugmentedImageFragment";
 
@@ -88,8 +89,7 @@ public class AugmentedImageActivity extends AppCompatActivity {
     Boolean isArrowHidden = true;
     Boolean isCylinderHidden = true;
 
-    float f = 0;
-
+    LinearLayout button_layout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -101,6 +101,7 @@ public class AugmentedImageActivity extends AppCompatActivity {
         polygon_button = findViewById(R.id.polygon_button);
         cylinder_button = findViewById(R.id.cylinder_button);
         arrow_button = findViewById(R.id.arrow_button);
+        button_layout = findViewById(R.id.button_layout);
 
 
         arFragment.getArSceneView().getScene().addOnUpdateListener(this::onUpdateFrame);
@@ -113,7 +114,10 @@ public class AugmentedImageActivity extends AppCompatActivity {
         super.onResume();
         if (augmentedImageMap.isEmpty()) {
             fitToScanView.setVisibility(View.VISIBLE);
+            button_layout.setVisibility(View.INVISIBLE);
         }
+        /*augmentedImageNode.hideCylinderGraph(true);
+        augmentedImageNode.hideArrowGraph(true);*/
 
     }
 
@@ -156,6 +160,7 @@ public class AugmentedImageActivity extends AppCompatActivity {
                 case TRACKING:
                     // Have to switch to UI Thread to update View.
                     fitToScanView.setVisibility(View.GONE);
+                    button_layout.setVisibility(View.VISIBLE);
 //                    Log.w("TrackPic","Tracking Method: "+augmentedImage.getTrackingMethod().toString());
 
                     // Create a new anchor for newly found images.
@@ -198,6 +203,11 @@ public class AugmentedImageActivity extends AppCompatActivity {
             arrow_button.setEnabled(false);
             cylinder_button.setEnabled(true);
             polygon_button.setEnabled(true);
+
+            arrow_button.setBackgroundResource(R.drawable.button_arrow_graph_selected);
+            cylinder_button.setBackgroundResource(R.drawable.button_cylinder_graph_unselected);
+            polygon_button.setBackgroundResource(R.drawable.button_bar_graph_unselected);
+
         }else {
             augmentedImageNode.hideArrowGraph(true);
             isArrowHidden = true;
@@ -216,6 +226,11 @@ public class AugmentedImageActivity extends AppCompatActivity {
             cylinder_button.setEnabled(false);
             polygon_button.setEnabled(true);
             arrow_button.setEnabled(true);
+
+            cylinder_button.setBackgroundResource(R.drawable.button_cylinder_graph_selected);
+            arrow_button.setBackgroundResource(R.drawable.button_arrow_graph_unselected);
+            polygon_button.setBackgroundResource(R.drawable.button_bar_graph_unselected);
+
         }else {
             augmentedImageNode.hideCylinderGraph(true);
             isCylinderHidden = true;
@@ -233,6 +248,10 @@ public class AugmentedImageActivity extends AppCompatActivity {
             polygon_button.setEnabled(false);
             cylinder_button.setEnabled(true);
             arrow_button.setEnabled(true);
+
+            polygon_button.setBackgroundResource(R.drawable.button_bar_graph_selected);
+            arrow_button.setBackgroundResource(R.drawable.button_arrow_graph_unselected);
+            cylinder_button.setBackgroundResource(R.drawable.button_cylinder_graph_unselected);
         }else {
             augmentedImageNode.hidePolygonGraph(true);
             isPolygonHidden = true;
