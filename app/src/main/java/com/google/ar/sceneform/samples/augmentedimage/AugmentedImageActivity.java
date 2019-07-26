@@ -69,9 +69,7 @@ public class AugmentedImageActivity extends AppCompatActivity {
     private Config config;
     private Session session;
     private AugmentedImageDatabase augmentedImageDatabase;
-    private AugmentedImageDatabase augmentedImageDatabase2;
     private  boolean isTrackedFirstTime = true;
-    private  boolean needToDisable = true;
 
     private static final String SAMPLE_IMAGE_DATABASE = "stones-marker.imgdb";
 //    private static final String SAMPLE_IMAGE_DATABASE = "new_sample_database.imgdb";
@@ -116,9 +114,6 @@ public class AugmentedImageActivity extends AppCompatActivity {
             fitToScanView.setVisibility(View.VISIBLE);
             button_layout.setVisibility(View.INVISIBLE);
         }
-        /*augmentedImageNode.hideCylinderGraph(true);
-        augmentedImageNode.hideArrowGraph(true);*/
-
     }
 
     /**
@@ -170,14 +165,12 @@ public class AugmentedImageActivity extends AppCompatActivity {
                         augmentedImageMap.put(augmentedImage, augmentedImageNode);
                         arFragment.getArSceneView().getScene().addChild(augmentedImageNode);
                     }
-//                    disableImageDb();
                     if (augmentedImage.getTrackingMethod().toString().equals("LAST_KNOWN_POSE")) SnackbarHelper.getInstance().hide(this);
 
 
                     break;
 
                 case STOPPED:
-//                    augmentedImageMap.remove(augmentedImage);
                     Log.w("TrackPic","Status: STOPPED");
                     Log.w("TrackPic","Tracking Method: "+augmentedImage.getTrackingMethod().toString());
                     break;
@@ -192,6 +185,7 @@ public class AugmentedImageActivity extends AppCompatActivity {
 
     }
 
+    // These three method are used for set the listener for each button to act like toggle button for each type of graphs
     private void setUpArrowButton() {
         if(isArrowHidden){
             augmentedImageNode.hideArrowGraph(false);
@@ -258,6 +252,7 @@ public class AugmentedImageActivity extends AppCompatActivity {
         }
     }
 
+    // Set the marker image from the imagedatabase
     private void enableImageDb(){
         session = arFragment.getArSceneView().getSession();
         config = session.getConfig();
@@ -271,18 +266,7 @@ public class AugmentedImageActivity extends AppCompatActivity {
 
     }
 
-    private void disableImageDb(){
-        if(needToDisable){
-            session = arFragment.getArSceneView().getSession();
-            config = session.getConfig();
-            config.setAugmentedImageDatabase(null);
-            session.configure(config);
-            needToDisable = false;
-
-            Log.w("TrackPic","Disable Imagedb");
-        }
-    }
-
+    // When terminate the app, disconnect from the Mqtt server
     public void onDestroy(){
         super.onDestroy();
 
