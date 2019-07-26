@@ -18,22 +18,19 @@ import org.eclipse.paho.client.mqttv3.MqttMessage;
 
 public class MqttHelper {
 
-    public MqttAndroidClient mqttAndroidClient;
+    MqttAndroidClient mqttAndroidClient;
 
-    final String serverUri = "tcp://postman.cloudmqtt.com:13865";
+    // Just only edit these 4 attributes to match any mqtt server
+    // Uri should be starts with tcp://
+    private final String serverUri = "tcp://postman.cloudmqtt.com:13865";
+    private final String subscriptionTopic = "test/result";
+    private final String username = "xamdzcss";
+    private final String password = "Dee5aMYWBwtk";
 
-    final String clientId = "ExampleAndroidClient";
-    final String subscriptionTopic = "test/result";
-    final String subscriptionTopic2 = "test/mid";
-    final String subscriptionTopic3 = "test/right";
-    final String subscriptionTopic4 = "test/back";
-    final String subscriptionTopic5 = "test/foot";
-
-    final String username = "xamdzcss";
-    final String password = "Dee5aMYWBwtk";
-    final String logTagTest = "test_mqtt";
-
-    Context context;
+    // clientId could be anything
+    private final String clientId = "ExampleAndroidClient";
+    private Context context;
+    private final String test_mqtt = "test_mqtt";
 
     public MqttHelper(Context context){
         this.context = context;
@@ -41,7 +38,7 @@ public class MqttHelper {
         mqttAndroidClient.setCallback(new MqttCallbackExtended() {
             @Override
             public void connectComplete(boolean b, String s) {
-                Log.w(logTagTest, s);
+                Log.w(test_mqtt, s);
             }
 
             @Override
@@ -51,7 +48,7 @@ public class MqttHelper {
 
             @Override
             public void messageArrived(String topic, MqttMessage mqttMessage) throws Exception {
-//                Log.w(logTagTest, mqttMessage.toString());
+//                Log.w(test_mqtt, mqttMessage.toString());
             }
 
             @Override
@@ -85,17 +82,15 @@ public class MqttHelper {
                     disconnectedBufferOptions.setPersistBuffer(false);
                     disconnectedBufferOptions.setDeleteOldestMessages(true);
                     mqttAndroidClient.setBufferOpts(disconnectedBufferOptions);
+
                     subscribeToTopic(subscriptionTopic);
-                    /*subscribeToTopic(subscriptionTopic2);
-                    subscribeToTopic(subscriptionTopic3);
-                    subscribeToTopic(subscriptionTopic4);
-                    subscribeToTopic(subscriptionTopic5);*/
+
 
                 }
 
                 @Override
                 public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
-                    Log.w(logTagTest, "Failed to connect to: " + serverUri + exception.toString());
+                    Log.w(test_mqtt, "Failed to connect to: " + serverUri + exception.toString());
                 }
             });
 
@@ -111,14 +106,14 @@ public class MqttHelper {
             mqttAndroidClient.subscribe(topic, 0, null, new IMqttActionListener() {
                 @Override
                 public void onSuccess(IMqttToken asyncActionToken) {
-                    Log.w(logTagTest,"Subscribed to: "+topic);
+                    Log.w(test_mqtt,"Subscribed to: "+topic);
                     SnackbarHelper.getInstance().showMessageWithDismiss((Activity) context,"Subscribed to: "+topic);
 
                 }
 
                 @Override
                 public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
-                    Log.w(logTagTest, "Subscribed fail!");
+                    Log.w(test_mqtt, "Subscribed fail!");
                 }
             });
 
