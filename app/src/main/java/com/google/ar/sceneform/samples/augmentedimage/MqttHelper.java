@@ -22,7 +22,7 @@ public class MqttHelper {
 
     // Just only edit these 4 attributes to match any mqtt server
     // Uri should be starts with tcp://
-    private final String serverUri = "tcp://postman.cloudmqtt.com:10055";
+    private final String serverUri = "tcp://postman.cloudmqtt.com:12345";
     private final String subscriptionTopic = "test/result";
     private final String username = "xamdzcss";
     private final String password = "Dee5aMYWBwtk";
